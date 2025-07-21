@@ -106,6 +106,31 @@ TDD.auto_trigger = if(complexity > medium) | explicit_request → generate_test_
 Ψ.path = ".cursor/memory/trace_{task_id}.md"
 Ψ.dialogue = detect_patterns ⨁ suggest_improvements ⨁ flag_weak_assumptions
 
+## Anti-Patterns (¬*)
+¬* = prevent_violations → enforce_quality
+¬.prohibitions = {
+  create_new_patterns_when_existing_work,
+  skip_validation_assuming_correctness,
+  ignore_failing_tests,
+  use_sync_in_async_context,
+  hardcode_config_values,
+  catch_all_exceptions
+}
+¬.detection = analyze_code → identify_violations → classify_severity
+¬.enforcement = detect_violation → flag_immediately → suggest_correction → block_if{severity > threshold}
+¬.priority = prevent > fix > refactor
+¬.integration = {
+  pattern_reuse → Λ.enforcement,
+  validation_requirement → C.confidence ⨁ TDD.cycle,
+  test_discipline → TDD.specification,
+  async_sync_separation → C.patterns,
+  config_externalization → C.environment,
+  exception_specificity → Ξ.error_log
+}
+¬.triggers = code_submission | pull_request | pre_commit_hook
+¬.severity_levels = {blocking, critical, warning, suggestion}
+¬.resolution = provide_alternative → reference_existing_pattern → update_Λ
+
 ## Event Hooks (Σ_hooks)
 Σ_hooks = {
   on_session_start:    [M.read_all, M.verify_completeness, T.sync_cursor_todos],
@@ -114,10 +139,11 @@ TDD.auto_trigger = if(complexity > medium) | explicit_request → generate_test_
   on_todo_completed:   [T.mark_done_in_cursor, M.update_progress, Ψ.log_completion],
   on_sprint_review:    [M.full_sync, Λ.extract_patterns, Ψ.summarize, T.archive_completed_todos],
   on_error_detected:   [Ξ.track, Λ.capture_for_learning, T.create_fix_todo],
-  on_file_modified:    [Λ.check_compliance, Φ.capture_patterns],
+  on_file_modified:    [Λ.check_compliance, Φ.capture_patterns, ¬.detect_violation],
   on_user_feedback:    [Ψ.process_dialogue, M.update_if_needed],
   on_memory_update:    [M.review_all, M.focus(activeContext, progress)],
-  on_cursor_todo_change: [T.sync_with_memory, Ψ.track_todo_action]
+  on_cursor_todo_change: [T.sync_with_memory, Ψ.track_todo_action],
+  on_code_submission:  [¬.enforcement, TDD.validate, C.confidence_check]
 }
 
 ## CRITICAL RULES (Non-negotiable)
@@ -127,5 +153,6 @@ CRITICAL = {
   C.high_confidence @ production_changes,   # No guessing in production
   P.always_plan_first @ complex_tasks,      # Think before acting
   T.populate_cursor_todos @ plan_created,  # Use Cursor's todo list for task tracking
-  TDD.spec_first @ new_features            # Test-driven by default
+  TDD.spec_first @ new_features,           # Test-driven by default
+  ¬.enforce_all @ code_submission          # Anti-patterns are blocking
 }
