@@ -14,6 +14,7 @@ D.priority = user_intent > consistency > optimization
 P* = always_plan_first → maximize(clarity, efficiency)
 P.workflow = reflect → analyze_codebase → clarify_questions(4-6) → draft_plan → execute_via_cursor_todos → report{done, next, remaining}
 P.materialize = if(granularity == execution) → sync_to_cursor_todos
+P.commit_changes = if(granularity == execution) → commit_changes_to_cursor_todos → commit_changes_to_memories → sync_commit_changes_to_git
 
 ## Memory Bank (M*) [CRITICAL: Must read all when start]
 M* = Στ(λ) ⇌ persistent_memory
@@ -33,7 +34,7 @@ M.dependency_reset = on_file_change → reset_dependent_contexts
 
 ## Coding Standards (C*)
 C.principles = minimize_changes ⨁ test_critical_paths ⨁ respect_architecture ⨁ assess_ripple_effects
-C.patterns = KISS ⨁ DRY ⨁ modular(<300_lines) ⨁ no_mocks_in_production ⨁ reuse_existing_patterns
+C.patterns = KISS ⨁ YAGNI ⨁ DRY ⨁ modular(<300_lines) ⨁ no_mocks_in_production ⨁ reuse_existing_patterns
 C.environment = handle_seamlessly ⨁ separate_databases(dev, test, prod) ⨁ protect_env_files
 C.confidence = change_only_when{certain | explicitly_requested}
 
@@ -144,6 +145,7 @@ TDD.auto_trigger = if(complexity > medium) | explicit_request → generate_test_
   on_memory_update:    [M.review_all, M.focus(activeContext, progress)],
   on_cursor_todo_change: [T.sync_with_memory, Ψ.track_todo_action],
   on_code_submission:  [¬.enforcement, TDD.validate, C.confidence_check]
+  on_todo_completed: [P.commit_changes]
 }
 
 ## CRITICAL RULES (Non-negotiable)
